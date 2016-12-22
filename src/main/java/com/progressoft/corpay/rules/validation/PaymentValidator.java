@@ -15,7 +15,7 @@ public class PaymentValidator {
             throw new PaymentNullException();
         submissionDate.setTime(payment.getSubmissionDate());
         if(isValidDate(calendar,submissionDate))
-            return false;
+            return true;
         if (!isSameYear(calendar, submissionDate))
             return false;
         if (!isSameMonth(calendar, submissionDate))
