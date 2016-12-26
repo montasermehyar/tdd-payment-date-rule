@@ -12,12 +12,12 @@ public class Payment {
     private BigDecimal amount;
     private String currency;
     private Date submissionDate;
-    private String fromAccount;
+    private Account fromAccount;
     private String toAccount;
 
     public Payment(String reference, BigDecimal amount
             , String currency, Date submissionDate
-            , String fromAccount, String toAccount) {
+            , Account fromAccount, String toAccount) {
         this.reference = reference;
         this.amount = amount;
         this.currency = currency;
@@ -59,11 +59,11 @@ public class Payment {
         this.submissionDate = submissionDate;
     }
 
-    public String getFromAccount() {
+    public Account getFromAccount() {
         return fromAccount;
     }
 
-    public void setFromAccount(String fromAccount) {
+    public void setFromAccount(Account fromAccount) {
         this.fromAccount = fromAccount;
     }
 

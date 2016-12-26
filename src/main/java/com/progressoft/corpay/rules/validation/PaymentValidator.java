@@ -3,47 +3,82 @@ package com.progressoft.corpay.rules.validation;
 import java.util.Calendar;
 import java.util.Date;
 
-/**
- * Created by u550 on 12/21/2016.
- */
 public class PaymentValidator {
 
+    public static final String NO_RULE = "NO_RULE";
+    public static final String SAME_DAY = "SAME_DAY";
+    public static final String SAME_MONTH = "SAME_MONTH";
+    public static final String SAME_YEAR = "SAME_YEAR";
+    private Calendar calendar;
+    private Calendar submissionDate;
+
     public boolean validate(Payment payment) {
-        Calendar calendar = Calendar.getInstance();
-        Calendar submissionDate = Calendar.getInstance();
+        calendar = Calendar.getInstance();
+        submissionDate = Calendar.getInstance();
         if (payment == null)
             throw new PaymentNullException();
+        if (payment.getFromAccount() == null)
+            throw new NullAccountException("Account is null");
+        if (payment.getFromAccount().getRule() == null)
+            throw new NullRuleException("Rule is null");
+
         submissionDate.setTime(payment.getSubmissionDate());
-        if(isValidDate(calendar,submissionDate))
-            return true;
-        if (!isSameYear(calendar, submissionDate))
+
+        if(isOldDate()||isNextYear())
             return false;
-        if (!isSameMonth(calendar, submissionDate))
+        return checkDateBaseOnRules(payment);
+    }
+
+    private boolean isNextYear() {
+        return submissionDate.get(Calendar.YEAR)>  calendar.get(Calendar.YEAR) ;
+    }
+
+    private boolean checkDateBaseOnRules(Payment payment) {
+            String range = payment.getFromAccount().getRule().getRange();
+            if (range.equals(NO_RULE) || range.equals(SAME_DAY))
+                return isSameDay();
+            if (range.equals(SAME_MONTH))
+                return isSameMonth();
+            if (range.equals(SAME_YEAR))
+                return isSameYear();
+        return false;
+    }
+
+    private boolean isOldDate() {
+        return isPrevYear() || isPrevMonth() || isPrevDay();
+    }
+
+    private boolean isPrevYear() {
+        return calendar.get(Calendar.YEAR) > submissionDate.get(Calendar.YEAR);
+    }
+
+    private boolean isPrevMonth() {
+        return calendar.get(Calendar.MONTH) > submissionDate.get(Calendar.MONTH);
+    }
+
+
+    private boolean isValidDate() {
+        if (!isSameYear())
             return false;
-        if (isPrevDay(calendar, submissionDate))
+        if (!isSameMonth())
+            return false;
+        if (isPrevDay())
             return false;
         return true;
     }
 
-    private boolean isValidDate(Calendar calendar, Calendar submissionDate) {
-        if (!isSameYear(calendar, submissionDate))
-            return false;
-        if (!isSameMonth(calendar, submissionDate))
-            return false;
-        if (isPrevDay(calendar, submissionDate))
-            return false;
-        return true;
+    private boolean isPrevDay() {
+        return calendar.get(Calendar.DAY_OF_MONTH) > submissionDate.get(Calendar.DAY_OF_MONTH);
     }
 
-    private boolean isPrevDay(Calendar calendar, Calendar submissionDate) {
-        return calendar.get(Calendar.DAY_OF_MONTH) >  submissionDate.get(Calendar.DAY_OF_MONTH);
-    }
-
-    private boolean isSameMonth(Calendar calendar, Calendar submissionDate) {
+    private boolean isSameMonth() {
         return calendar.get(Calendar.MONTH) == submissionDate.get(Calendar.MONTH);
     }
+    private boolean isSameDay() {
+        return calendar.get(Calendar.DAY_OF_MONTH) == submissionDate.get(Calendar.DAY_OF_MONTH);
+    }
 
-    private boolean isSameYear(Calendar calendar, Calendar submissionDate) {
+    private boolean isSameYear() {
         return calendar.get(Calendar.YEAR) == submissionDate.get(Calendar.YEAR);
     }
 }
